@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Feel the Word</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+
+<style>
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: 'Inter', sans-serif;
+  color: white;
+  background: url('https://images.unsplash.com/photo-1500530855697-b586d89ba3ee') center/cover no-repeat;
+}
+
+/* DARK OVERLAY */
+body::after {
+  content: "";
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle, rgba(0,0,0,0.2), rgba(0,0,0,0.85));
+  z-index: -1;
+}
+
+/* NAV */
+nav {
+  position: fixed;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  gap: 50px;
+  padding: 20px;
+  backdrop-filter: blur(20px);
+  background: rgba(255,255,255,0.03);
+  z-index: 10;
+}
+
+nav a {
+  color: #aaa;
+  text-decoration: none;
+  cursor: pointer;
+  transition: 0.3s;
+}
+nav a:hover { color: white; }
+
+/* SECTION */
+.section {
+  height: 100vh;
+  display: none;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  text-align: center;
+  padding: 20px;
+}
+.active { display: flex; }
+
+/* WORD */
+.word {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(2.5rem, 5vw, 4rem);
+  text-shadow: 0 10px 40px rgba(0,0,0,0.6);
+}
+
+.meaning {
+  margin-top: 15px;
+  color: #ccc;
+  max-width: 500px;
+}
+
+.vibe {
+  margin-top: 10px;
+  font-style: italic;
+  opacity: 0.7;
+}
+
+/* BUTTONS */
+.buttons {
+  margin-top: 30px;
+  display: flex;
+  gap: 15px;
+}
+
+button {
+  padding: 12px 28px;
+  border-radius: 30px;
+  border: none;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.primary {
+  background: linear-gradient(135deg, #6c63ff, #8a7dff);
+  box-shadow: 0 10px 30px rgba(108,99,255,0.3);
+  color: white;
+}
+
+.secondary {
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.2);
+  color: white;
+}
+
+button:hover { transform: translateY(-2px); }
+
+/* LOADER */
+.loader {
+  margin-top: 20px;
+  width: 20px;
+  height: 20px;
+  border: 3px solid #555;
+  border-top: 3px solid white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  display: none;
+}
+
+@keyframes spin { 100% { transform: rotate(360deg);} }
+
+/* FADE */
+.fade {
+  animation: fade 0.6s ease;
+}
+@keyframes fade {
+  from { opacity: 0; transform: translateY(10px);}
+  to { opacity: 1; transform: translateY(0);}
+}
+
+/* CARDS */
+.grid {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 30px;
+}
+
+.card {
+  width: 200px;
+  padding: 20px;
+  border-radius: 20px;
+  background: rgba(255,255,255,0.05);
+  backdrop-filter: blur(15px);
+  transition: 0.3s;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  background: rgba(255,255,255,0.1);
+}
+
+.card span {
+  display: block;
+  margin-top: 8px;
+  font-size: 0.9rem;
+  color: #aaa;
+}
+</style>
+</head>
+
+<body>
+
+<nav>
+  <a onclick="showSection('home')">Home</a>
+  <a onclick="showSection('explore')">Explore</a>
+</nav>
+
+<!-- HOME -->
+<div id="home" class="section active">
+  <div class="word" id="word"></div>
+  <div class="meaning" id="meaning"></div>
+  <div class="vibe" id="vibe"></div>
+
+  <div class="buttons">
+    <button class="primary" onclick="nextWord()">Next</button>
+    <button class="secondary" onclick="randomWord()">Discover</button>
+  </div>
+
+  <div class="loader" id="loader"></div>
+</div>
+
+<!-- EXPLORE -->
+<div id="explore" class="section">
+  <h2 style="font-family: Playfair Display; font-size: 2.5rem;">Curated Words</h2>
+  <div class="grid" id="grid"></div>
+</div>
+
+<script>
+const curated = [
+{word:"Ephemeral", meaning:"Lasting a very short time", vibe:"It fades before you hold it."},
+{word:"Ethereal", meaning:"Delicate and unreal", vibe:"Like a dream you can't explain."},
+{word:"Liminal", meaning:"In between states", vibe:"Not here. Not there."},
+{word:"Petrichor", meaning:"Smell after rain", vibe:"Earth remembering water."},
+{word:"Sonder", meaning:"Everyone has a story", vibe:"Lives passing silently."}
+];
+
+let index = 0;
+
+function showWord(obj) {
+  const w = document.getElementById("word");
+  const m = document.getElementById("meaning");
+  const v = document.getElementById("vibe");
+
+  w.classList.remove("fade");
+  m.classList.remove("fade");
+  v.classList.remove("fade");
+
+  setTimeout(() => {
+    w.textContent = obj.word;
+    m.textContent = obj.meaning;
+    v.textContent = obj.vibe || "";
+
+    w.classList.add("fade");
+    m.classList.add("fade");
+    v.classList.add("fade");
+  }, 100);
+}
+
+function nextWord() {
+  index = (index + 1) % curated.length;
+  showWord(curated[index]);
+}
+
+async function randomWord() {
+  const loader = document.getElementById("loader");
+  loader.style.display = "block";
+
+  try {
+    const wordRes = await fetch("https://random-word-api.herokuapp.com/word");
+    const word = (await wordRes.json())[0];
+
+    const defRes = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${word}`);
+    const defData = await defRes.json();
+
+    let meaning = "A word waiting to be understood.";
+
+    if (Array.isArray(defData)) {
+      meaning = defData[0]?.meanings?.[0]?.definitions?.[0]?.definition || meaning;
+    }
+
+    showWord({
+      word,
+      meaning: meaning.split(";")[0],
+      vibe: "A word you just stumbled upon."
+    });
+
+  } catch {
+    showWord({
+      word: "Serendipity",
+      meaning: "A lucky unexpected discovery.",
+      vibe: "Even errors can be beautiful."
+    });
+  }
+
+  loader.style.display = "none";
+}
+
+function showSection(id) {
+  document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function loadGrid() {
+  const grid = document.getElementById("grid");
+
+  curated.forEach(w => {
+    const div = document.createElement("div");
+    div.className = "card";
+    div.innerHTML = `<b>${w.word}</b><span>${w.meaning}</span>`;
+    grid.appendChild(div);
+  });
+}
+
+window.onload = () => {
+  showWord(curated[0]);
+  loadGrid();
+};
+</script>
+
+</body>
+</html>
